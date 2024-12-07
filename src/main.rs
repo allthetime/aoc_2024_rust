@@ -1,5 +1,5 @@
-mod utils;
-
+mod day005;
 fn main() {
-    println!("Hello, world!");
+    let five_sol = day005::solve();
+    println!("{}", five_sol);
 }

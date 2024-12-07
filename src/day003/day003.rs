@@ -48,7 +48,7 @@ fn part_1 (data: String) -> () {
     println!("part1: {total}");
 }
 
-fn main() {
+pub fn main() {
 
     let data = parse_input();
 

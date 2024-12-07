@@ -1,6 +1,8 @@
-use std::fs::read_to_string;
+use std::{fs::read_to_string, path::Path};
 
-const FILENAME: &str = "data";
+use crate::utils::{self, Part, Solution};
+
+const FILENAME: &str = "day004/data";
 
 fn parse_input () -> String {
     read_to_string(FILENAME)
@@ -91,9 +93,11 @@ fn find_adjacent_chars_in_data(char_to_find: char, data: &Vec<char>, cursor: usi
     Ok(adjacent_chars)
 }
 
-fn main() {
+pub fn solve() -> Solution{
 
-    let data = parse_input();
+    dbg!("Solving day 4");
+
+    let data = utils::get_data_string(4, utils::DataSource::Data);
     let lines = data.lines().collect::<Vec<_>>();
     let (height, width) = (lines.len(), lines[0].len());
     let area = height * width;
@@ -102,8 +106,7 @@ fn main() {
     let mut cursor = 0;
     let mut current_char;
 
-    let mut total_xmas_1 = 0;
-    let mut total_xmas_2 = 0;
+    let mut solution = utils::Solution::new("day 4");
 
     while cursor < area {
 
@@ -116,7 +119,7 @@ fn main() {
                     let adjacent_as = find_adjacent_chars_in_data('A', &chars, adjacent_m, width, height, Some(vec!(direction)));
                     for (adjacent_a, _) in adjacent_as.unwrap() {
                         let adjacent_ss = find_adjacent_chars_in_data('S', &chars, adjacent_a, width, height, Some(vec!(direction))).unwrap();
-                        total_xmas_1 += adjacent_ss.len();
+                        solution.increment(Part::One, adjacent_ss.len());
                     }
                 }
             },
@@ -128,7 +131,7 @@ fn main() {
                         let rotate_adjacent_ms = find_adjacent_chars_in_data('M', &chars, cursor, width, height, Some(vec!(rotate_direction(direction1, Rotation::Clockwise_90), rotate_direction(direction1, Rotation::CounterClockwise_90))));
                         for (_adjacent_m, direction2) in rotate_adjacent_ms.unwrap() {
                             let opposite_s = find_adjacent_chars_in_data('S', &chars, cursor, width, height, Some(vec!(rotate_direction(direction2, Rotation::Opposite_180))));
-                            total_xmas_2 += opposite_s.unwrap().len();
+                            solution.increment(Part::Two, opposite_s.unwrap().len());
                         }
                     }
                 }
@@ -142,6 +145,7 @@ fn main() {
     }
 
     // divide final answer by 2 because algo double counts due to the symmetry of the X-MAS
-    println!("part1: {}\npart2: {}", total_xmas_1, total_xmas_2 / 2);
+    solution.modify(Part::Two, |val| val / 2);
+    solution
 
 }

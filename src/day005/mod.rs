@@ -1,15 +1,13 @@
 use std::fs::read_to_string;
 use std::collections::HashMap;
-
-const FILENAME: &str = "data";
-const FILENAME_: &str = "test.dat";
+use crate::utils::{get_data_string, DataSource, Part, Solution};
 
 fn get_usize (s: &str) -> usize {
     s.parse::<usize>().unwrap()
 }
 
 fn parse_input () -> (Vec<(usize, usize)>, Vec<Vec<usize>>) {
-    let file_content = read_to_string(FILENAME_).unwrap();
+    let file_content = get_data_string(5,DataSource::Data);
 
     let data: Vec<&str> = file_content
         .split("\n\n")
@@ -33,68 +31,62 @@ fn parse_input () -> (Vec<(usize, usize)>, Vec<Vec<usize>>) {
     (page_order_rules, page_data)
 }
 
-pub fn solve () -> usize {
-    let (page_order_rules, page_data) = parse_input();
-    // println!("{:?} {:?}", page_order_rules, page_data);
+fn get_middle_element (page: &Vec<usize>) -> usize {
+    let page_len: usize = page.len();
+    let middle_element_index = (page_len as f32 / 2_f32).floor() as usize;
+    page[middle_element_index]
+}
 
-    let mut comes_after: HashMap<usize, Vec<usize>> = HashMap::new();
-    let mut comes_before: HashMap<usize, Vec<usize>> = HashMap::new();
-
+fn build_order_map (page_order_rules: &Vec<(usize, usize)>, comes_after: &mut HashMap<usize, Vec<usize>>) {
     for (a, b) in page_order_rules {
         let entry = comes_after
-            .entry(a)
+            .entry(*a)
             .or_insert(Vec::new());
-        entry.push(b);
-
-        let entry = comes_before
-            .entry(b)
-            .or_insert(Vec::new());
-        entry.push(a);
+        entry.push(*b);
     }
+}
 
-    // dbg!(&comes_after);
-    // dbg!(comes_before);
+pub fn solve () -> Solution {
 
-    let mut total_of_middle_num = 0;
+    let mut solution = Solution::new("day 5");
 
-    for (_page_num, page) in page_data.iter().enumerate() {
-        // dbg!(&page);
+    let (page_order_rules, mut page_data) = parse_input();
+    
+    let mut comes_after: HashMap<usize, Vec<usize>> = HashMap::new();
+    build_order_map(&page_order_rules, &mut comes_after);
 
-        let page_len: usize = page.len();
-        let mut fixed_page = page.clone();
-        let mut bad_page = false;
+    for page in page_data.iter_mut() {
+        
+        let mut page_out_of_order = false;
     
         for (i, &elem) in page.iter().enumerate() {
-            let has_comes_after = comes_after.contains_key(&elem);
-            if (has_comes_after) {
-                let comes_after_pages = comes_after.get(&elem).unwrap();
-                for &page_after in comes_after_pages {
-                    let comes_after_index = page.iter().position(|&e| e == page_after);
-                    match comes_after_index {
-                        Some(comes_after_index) => {
-                            let comes_before = i > comes_after_index;
-                            if comes_before {
-                                bad_page = true;
-                                fixed_page.swap(i, comes_after_index);
-                            }
-                        },
-                        None => {
-
-                        }
+            if comes_after.contains_key(&elem) {
+                for &comes_after_elem in comes_after.get(&elem).unwrap() {
+                    page_out_of_order = match page.iter().position(|&e| e == comes_after_elem) {
+                        Some(comes_after_index) => i > comes_after_index || page_out_of_order,
+                        None => page_out_of_order
                     }
                 }              
             }
         }
 
-        dbg!(&fixed_page, &page);
-
-        if !bad_page {
-            let middle_element_index = (page_len as f32 / 2_f32).floor() as usize;
-            let middle_element = page[middle_element_index];
-            total_of_middle_num += middle_element;
+        if !page_out_of_order {
+            solution.increment(Part::One, get_middle_element(page))
+        } else {
+            page.sort_by(|a, b| {
+                match comes_after.get(&b) {
+                    Some(after_nums) => if after_nums.iter().any(|&n| n == *a) {
+                            std::cmp::Ordering::Less
+                        } else {
+                            std::cmp::Ordering::Greater
+                        },
+                    None=> std::cmp::Ordering::Equal
+                }
+            });
+            solution.increment(Part::Two, get_middle_element(&page))
         }
     }
 
-    total_of_middle_num
+    solution
 }
 

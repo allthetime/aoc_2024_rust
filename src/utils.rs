@@ -2,7 +2,7 @@ use std::{fs::read_to_string, path::Path};
 
 pub struct Solution {
     part1: usize,
-    part2: usize,
+    pub part2: usize,
     label: &'static str,
 }
 

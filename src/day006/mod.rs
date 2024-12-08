@@ -1,7 +1,9 @@
 use std::{collections::HashMap, hash::Hash};
 use crate::utils::{get_data_string, DataSource, Part, Solution};
 
-#[derive(Debug, PartialEq, Clone, Copy)]
+pub(crate) mod other_guy_solution;
+
+#[derive(Debug, PartialEq, Clone, Copy, Eq, Hash)]
 enum Direction  {
     Up,
     Down,
@@ -14,13 +16,13 @@ struct Guard {
     x: usize,
     y: usize,
     direction: Direction,
-    visited: HashMap<(usize, usize), usize>,
+    visited: HashMap<((usize, usize), Direction), usize>,
 }
 
 impl Guard {
     fn new (x: usize, y: usize) -> Guard {
         let mut visited = HashMap::new();
-        visited.insert((x,y), 1);
+        visited.insert(((x,y), Direction::Up), 1);
         Guard {
             x,
             y,
@@ -35,7 +37,7 @@ impl Guard {
             Direction::Left => self.x -= 1,
             Direction::Right => self.x += 1,
         }
-        self.visited.entry((self.x, self.y)).and_modify(|v| *v += 1).or_insert(1);
+        self.visited.entry(((self.x, self.y), self.direction)).and_modify(|v| *v += 1).or_insert(1);
     }
     fn rotate_right (&mut self) {
         self.direction = match self.direction {
@@ -47,10 +49,10 @@ impl Guard {
     }
 }
 
-fn parse_input () -> Vec<Vec<char>> { 
+fn parse_input () -> Vec<Vec<char>> {
     get_data_string(6,DataSource::Data)
         .lines()
-        .map(|x| 
+        .map(|x|
             x.chars().collect::<Vec<char>>()
         ).collect()
 }
@@ -69,7 +71,7 @@ fn find_and_create_guard (data: &Vec<Vec<char>>) -> Option<Guard> {
     guard
 }
 
-fn get_char_in_front_of_guard(guard: &Guard, data: &Vec<Vec<char>>) -> Option<char> {
+fn get_char_in_front_of_guard(guard: &Guard, data: &Vec<Vec<char>>) -> Option<(char, (usize,usize))> {
     let (x, y) = match guard.direction {
         Direction::Up if guard.y > 0 => (guard.x, guard.y - 1),
         Direction::Down if guard.y < data.len() - 1 => (guard.x, guard.y + 1),
@@ -79,7 +81,7 @@ fn get_char_in_front_of_guard(guard: &Guard, data: &Vec<Vec<char>>) -> Option<ch
     };
 
     if pos_in_bounds(x, y, data) {
-        Some(data[y][x])
+        Some((data[y][x], (x,y)))
     } else {
         None
     }
@@ -101,30 +103,36 @@ fn data_clone_with_obstacle_added_at_position (data: &Vec<Vec<char>>, x: usize, 
 }
 
 fn simulate_walk (guard: & mut Guard, data: &Vec<Vec<char>>, solution: &mut Solution) -> () {
-    
-    let mut obstacles_encounterd: Vec<((usize, usize), Direction)> = Vec::new();
 
     while guard_in_bounds(&guard, data) {
 
-        let char_in_front_of_guard = get_char_in_front_of_guard(&guard, data);
-    
+        let (char_in_front_of_guard, pos_of_char) = match get_char_in_front_of_guard(&guard, data) {
+            Some((c, pos)) => (Some(c), pos),
+            None => (None, (0,0)),
+        };
+
         match char_in_front_of_guard {
             Some('#') | Some('0') => {
 
                 guard.rotate_right();
                 guard.walk_forward();
 
-                if obstacles_encounterd.contains(&((guard.x, guard.y), guard.direction)) {
-                    solution.increment(Part::Two, 1);
-                    break;
+                match guard.visited.get(&((guard.x, guard.y), guard.direction)) {
+                    Some(v) => {
+                        if *v > 1 {
+                            solution.increment(Part::Two, 1);
+                            break;
+                        }
+                    },
+                    None => {
+
+                    }
                 }
-                
-                obstacles_encounterd.push(((guard.x, guard.y), guard.direction));
 
             },
             Some('.') | Some('^')=> {
                 guard.walk_forward();
-            },       
+            },
             None => {
                 break;
             },
@@ -136,26 +144,33 @@ fn simulate_walk (guard: & mut Guard, data: &Vec<Vec<char>>, solution: &mut Solu
 }
 
 fn iterate_through_all_possible_positions (original_guard: &Guard, data: &Vec<Vec<char>>, solution: &mut Solution, original_guard_position: (usize, usize)) -> () {
-    let visited_positions = original_guard.visited.keys();
-    for (x,y) in visited_positions.filter(|(x,y)| (*x, *y) != original_guard_position)
+    let visited_positions = filter_out_visited_with_duplicate_positions(original_guard);
+    for (x,y) in visited_positions.into_iter().filter(|(x,y)| (*x, *y) != original_guard_position)
         .filter(|(x,y)| data[*y][*x] == '.') {
-            let new_data = data_clone_with_obstacle_added_at_position(data, *x, *y);
+            let new_data = data_clone_with_obstacle_added_at_position(data, x, y);
             let mut guard = find_and_create_guard(&data).unwrap();
             simulate_walk(&mut guard, &new_data, solution);
         }
 }
 
+fn filter_out_visited_with_duplicate_positions (guard: &Guard) -> Vec<((usize, usize))> {
+    let mut visited_positions = guard.visited.keys().map(|((x,y), direction)| ((*x, *y))).collect::<Vec<((usize, usize))>>();
+    visited_positions.sort();
+    visited_positions.dedup();
+    visited_positions
+}
+
 pub fn solve () -> Solution {
 
-    let mut solution: Solution = Solution::new("day 6");
+    let mut solution: Solution = Solution::new("day 7");
     let data: Vec<Vec<char>> = parse_input();
     let mut guard: Guard = find_and_create_guard(&data).unwrap();
 
     let original_guard_position = (guard.x, guard.y);
 
     simulate_walk(&mut guard, &data, &mut solution);
-    let unique_locations_visited = &guard.visited.iter().count();
-    solution.increment(Part::One, *unique_locations_visited);
+    let unique_locations_visited = filter_out_visited_with_duplicate_positions(&guard).len();
+    solution.increment(Part::One, unique_locations_visited);
 
     iterate_through_all_possible_positions(&guard, &data, &mut solution, original_guard_position);
 

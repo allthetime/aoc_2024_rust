@@ -33,7 +33,7 @@ async fn main () -> Result<(), Box<dyn std::error::Error>> {
     let data = resp.trim();
 
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push(format!("src/{}/data",dfs));
+    d.push(format!("src/day{}/data",dfs));
 
     fs::write(d, data).expect("Unable to write file");
 

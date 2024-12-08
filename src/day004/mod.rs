@@ -23,10 +23,10 @@ enum Directions {
 
 const ITERABLE_DIRECTIONS: [Directions; 8] = [
     Directions::Up,
-    Directions::UpRight, 
-    Directions::Right, 
+    Directions::UpRight,
+    Directions::Right,
     Directions::DownRight,
-    Directions::Down, 
+    Directions::Down,
     Directions::DownLeft,
     Directions::Left,
     Directions::UpLeft,
@@ -41,9 +41,9 @@ fn bounds_check(cursor: i32, outside_bounds: bool) -> Result<usize, &'static str
 }
 
 fn get_char_in_direction(direction: Directions, cursor: usize, width: usize, height: usize) -> Result<usize, &'static str> {
-    
+
     let (cursor_i32, width_i32, height_i32) = (cursor as i32, width as i32, height as i32);
-    
+
     match direction {
         Directions::Up => bounds_check(cursor_i32 - width_i32, cursor_i32 < width_i32),
         Directions::Down => bounds_check(cursor_i32 + width_i32, cursor_i32 >= width_i32 * (height_i32 - 1)),
@@ -74,7 +74,7 @@ fn rotate_direction (direction: Directions, rotation: Rotation) -> Directions {
 
 fn find_adjacent_chars_in_data(char_to_find: char, data: &Vec<char>, cursor: usize, width: usize, height: usize, force_direction: Option<Vec<Directions>>) -> Result< Vec<(usize,Directions)>, &'static str> {
     let mut adjacent_chars = Vec::new();
-    for direction in ITERABLE_DIRECTIONS.iter().filter( |d| match &force_direction { 
+    for direction in ITERABLE_DIRECTIONS.iter().filter( |d| match &force_direction {
         Some(force_direction) => force_direction.contains(d),
         None => true
     }) {
@@ -94,8 +94,6 @@ fn find_adjacent_chars_in_data(char_to_find: char, data: &Vec<char>, cursor: usi
 }
 
 pub fn solve() -> Solution{
-
-    dbg!("Solving day 4");
 
     let data = utils::get_data_string(4, utils::DataSource::Data);
     let lines = data.lines().collect::<Vec<_>>();

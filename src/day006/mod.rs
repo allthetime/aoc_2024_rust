@@ -80,7 +80,7 @@ impl GuardAndState {
     fn reset (&mut self, xy: (usize, usize), part: utils::Part) {
         self.xy = xy;
         self.direction = Direction::Up;
-        self.places_visited.clear();
+        // self.places_visited.clear();
         self.obstacles_hit_and_directions.clear();
         self.part = part;
     }
@@ -157,7 +157,8 @@ pub fn solve () -> utils::Solution {
 
     guard.reset(caret_start_position, utils::Part::Two);
 
-    let possible_locations_for_obstructions = get_all_positions_with_dot(&data);
+    let binding = get_all_positions_with_dot(&data);
+    let possible_locations_for_obstructions = binding.iter().filter(|(x,y)| guard.places_visited.contains(&(*x, *y))).collect::<Vec<_>>();
     possible_locations_for_obstructions.iter().for_each(|(x, y)| {
 
         // replace dot with obstruction

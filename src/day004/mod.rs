@@ -95,8 +95,6 @@ fn find_adjacent_chars_in_data(char_to_find: char, data: &Vec<char>, cursor: usi
 
 pub fn solve() -> Solution{
 
-    dbg!("Solving day 4");
-
     let data = utils::get_data_string(4, utils::DataSource::Data);
     let lines = data.lines().collect::<Vec<_>>();
     let (height, width) = (lines.len(), lines[0].len());

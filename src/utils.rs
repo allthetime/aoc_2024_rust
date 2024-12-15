@@ -6,6 +6,7 @@ pub struct Solution {
     label: &'static str,
 }
 
+#[derive(PartialEq)]
 pub enum Part {
     One,
     Two,

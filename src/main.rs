@@ -10,11 +10,11 @@ mod day004;
 fn main() {
 
     let solutions = vec![
-        Solution::new("day 1"),
-        Solution::new("day 2"),
-        Solution::new("day 3"),
-        day004::solve(),
-        day005::solve(),
+        // Solution::new("day 1"),
+        // Solution::new("day 2"),
+        // Solution::new("day 3"),
+        // day004::solve(),
+        // day005::solve(),
         day006::solve()
     ];
 

@@ -7,6 +7,8 @@ mod day004;
 mod day005;
 mod day006;
 mod day007;
+mod day008;
+// {NEW_DAY_MOD}
 
 fn main() {
 
@@ -18,6 +20,8 @@ fn main() {
         day005::solve,
         day006::solve,
         day007::solve,
+        day008::solve,
+// {NEW_DAY_RUN}
     ];
 
     let args: Vec<String> = env::args().collect();

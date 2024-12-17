@@ -1,4 +1,4 @@
-use std::{fs::read_to_string, path::Path};
+use std::{fs::read_to_string, path::{Path, PathBuf}};
 
 pub struct Solution {
     part1: usize,
@@ -62,6 +62,7 @@ fn get_filename (source: DataSource) -> &'static str {
 
 pub fn get_data_string (day:usize, source: DataSource) -> String {
     let file_name = get_filename(source);
-    let path = format!("day{:03}/{}", day, file_name);
-    read_to_string(path).expect("please run from SRC")
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push(format!("src/day{:03}/{}", day, file_name));
+    read_to_string(d).expect("please run from SRC")
 }

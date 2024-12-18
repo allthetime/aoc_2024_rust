@@ -1,6 +1,6 @@
+use std::env;
 use std::fs;
 use std::process::Command;
-use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -55,11 +55,17 @@ fn main() {
     let new_day_run = format!("day{:0>3}::solve", day_number);
 
     if !main_rs_content.contains(&new_day_mod) {
-        main_rs_content = main_rs_content.replace("// {NEW_DAY_MOD}", &format!("{}\n// {{NEW_DAY_MOD}}", new_day_mod));
+        main_rs_content = main_rs_content.replace(
+            "// {NEW_DAY_MOD}",
+            &format!("{}\n// {{NEW_DAY_MOD}}", new_day_mod),
+        );
     }
 
     if !main_rs_content.contains(&new_day_run) {
-        main_rs_content = main_rs_content.replace("// {NEW_DAY_RUN}", &format!("{}\n// {{NEW_DAY_RUN}}", new_day_run));
+        main_rs_content = main_rs_content.replace(
+            "        // {NEW_DAY_RUN}",
+            &format!("{}\n        // {{NEW_DAY_RUN}}", new_day_run),
+        );
     }
 
     fs::write(main_rs_path, main_rs_content).expect("Failed to write main.rs");

@@ -129,6 +129,9 @@ pub fn solve() -> Solution {
         let mut index = 0;
         for (i, block) in file_system.iter() {
             if block.value.is_some() {
+                if organized_file_system.len() == non_empty_blocks {
+                    break;
+                }
                 organized_file_system.push(*block);
             } else {
                 organized_file_system.push(numbers_to_move[index].1);
@@ -137,9 +140,9 @@ pub fn solve() -> Solution {
         }
     }
 
-    print_file_system(&organized_file_system[0..non_empty_blocks]);
+    // print_file_system(&organized_file_system[0..non_empty_blocks]);
 
-    organized_file_system[0..non_empty_blocks]
+    organized_file_system
         .iter()
         .enumerate()
         .for_each(|(index, block)| {

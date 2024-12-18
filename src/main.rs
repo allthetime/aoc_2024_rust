@@ -27,7 +27,6 @@ fn main() {
 
     let args: Vec<String> = env::args().collect();
 
-    dbg!(&args);
     if args.len() < 2 {
         solutions.iter().for_each(|s| s().print_solution());
     } else {

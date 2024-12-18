@@ -66,3 +66,27 @@ pub fn get_data_string (day:usize, source: DataSource) -> String {
     d.push(format!("src/day{:03}/{}", day, file_name));
     read_to_string(d).expect("please run from SRC")
 }
+
+pub struct Timer {
+    start: std::time::Instant,
+}
+
+impl Timer {
+    pub fn new () -> Timer {
+        Timer {
+            start: std::time::Instant::now(),
+        }
+    }
+
+    pub fn elapsed (&self) -> std::time::Duration {
+        self.start.elapsed()
+    }
+
+    pub fn reset (&mut self) {
+        self.start = std::time::Instant::now();
+    }
+
+    pub fn print_elapsed (&self) {
+        println!("Elapsed: {:.2?}", self.elapsed());
+    }
+}

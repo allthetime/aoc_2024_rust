@@ -1,3 +1,6 @@
+use tailcall::tailcall;
+use std::time::Instant;
+
 use crate::{utils, Solution};
 
 type Id = usize;
@@ -5,7 +8,7 @@ type Id = usize;
 #[derive(Debug, Copy, Clone)]
 enum Builder {
     File(File),
-    Space(SpaceBuilder),
+    Space(Space),
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -15,7 +18,7 @@ struct File {
 }
 
 #[derive(Debug, Copy, Clone)]
-struct SpaceBuilder {
+struct Space {
     length: usize,
 }
 
@@ -44,6 +47,38 @@ fn block_builder(mut blocks: Vec<Block>, builder: Builder, index: usize) -> Vec<
     block_builder(blocks, builder, index + 1)
 }
 
+fn file_system_organizer(file_system: &[Block]) -> Vec<Block> {
+
+    let (empty_blocks_count, non_empty_blocks_count) = count_blocks(&file_system);
+    let blocks_to_add = get_n_non_empty_blocks_from_back(&file_system, empty_blocks_count);
+
+    let mut organized_file_system: Vec<Block> = Vec::new();
+
+    #[tailcall]
+    fn organizer(organized_file_system: &mut Vec<Block>, file_system: &[Block], blocks_to_add: &[Block], non_empty_blocks_count: usize) -> Vec<Block> {
+    
+        if organized_file_system.len() == non_empty_blocks_count {
+            return organized_file_system.to_vec();
+        }
+     
+        let first_file_system_block = file_system[0];
+        let rest_of_file_system = &file_system[1..];
+    
+        if first_file_system_block.value.is_some() {
+            organized_file_system.push(first_file_system_block);
+            organizer(organized_file_system, rest_of_file_system, blocks_to_add, non_empty_blocks_count )
+        } else {
+            let first_block_to_add = blocks_to_add[0];
+            let rest_of_blocks_to_add = &blocks_to_add[1..];
+            organized_file_system.push(first_block_to_add);
+            organizer(organized_file_system, rest_of_file_system, rest_of_blocks_to_add, non_empty_blocks_count )
+        }
+    }
+
+    organizer(&mut organized_file_system, &file_system, &blocks_to_add, non_empty_blocks_count)
+}
+
+
 fn print_file_system(file_system: &[Block]) {
     for block in file_system {
         match block.value {
@@ -57,44 +92,31 @@ fn print_file_system(file_system: &[Block]) {
     }
 }
 
-fn count_empty_blocks(file_system: &[(usize, Block)]) -> usize {
-    file_system
-        .iter()
-        .filter(|block| block.1.value.is_none())
-        .count()
-}
-
-fn count_non_empty_blocks(file_system: &[(usize, Block)]) -> usize {
-    file_system
-        .iter()
-        .filter(|block| block.1.value.is_some())
-        .count()
-}
-
-fn count_blocks(file_system: &[(usize, Block)]) -> (usize, usize) {
-    let empty_blocks = count_empty_blocks(&file_system);
-    let non_empty_blocks = count_non_empty_blocks(&file_system);
-    (empty_blocks, non_empty_blocks)
+fn count_blocks(file_system: &[Block]) -> (usize, usize) {
+    let (empty_blocks, non_empty_blocks): (Vec<&Block>, Vec<&Block>) = file_system.iter().partition(|block| block.value.is_none());
+    (empty_blocks.len(), non_empty_blocks.len())
 }
 
 fn get_n_non_empty_blocks_from_back(
-    file_system: &[(usize, Block)],
+    file_system: &[Block],
     n: usize,
-) -> Vec<(usize, Block)> {
+) -> Vec<Block> {
     file_system
         .iter()
         .rev()
-        .filter(|block| block.1.value.is_some())
+        .filter(|block| block.value.is_some())
         .take(n)
-        .map(|(i, block)| (*i, *block))
+        .map(|block| *block)
         .collect()
 }
 
 pub fn solve() -> Solution {
+
     let data = parse_input();
     let mut solution = Solution::new("day 9");
+    let timer = utils::Timer::new();
 
-    let builder: Vec<Builder> = data
+    let file_system: Vec<Block> = data
         .into_iter()
         .enumerate()
         .map(|(i, x)| {
@@ -106,41 +128,15 @@ pub fn solve() -> Solution {
                     length,
                 })
             } else {
-                Builder::Space(SpaceBuilder { length })
+                Builder::Space(Space { length })
             }
         })
+        .flat_map(|builder| block_builder(Vec::new(), builder, 0).into_iter())
         .collect();
 
-    let file_system: Vec<(usize, Block)> = builder
-        .iter()
-        .flat_map(|builder| block_builder(Vec::new(), *builder, 0).into_iter())
-        .enumerate()
-        .collect();
+    let organized_file_system = file_system_organizer(&file_system);
 
-    let (empty_blocks, non_empty_blocks) = count_blocks(&file_system);
-
-    dbg!(empty_blocks, non_empty_blocks);
-
-    let numbers_to_move = get_n_non_empty_blocks_from_back(&file_system, empty_blocks);
-
-    let mut organized_file_system: Vec<Block> = Vec::new();
-
-    while organized_file_system.len() < non_empty_blocks {
-        let mut index = 0;
-        for (i, block) in file_system.iter() {
-            if block.value.is_some() {
-                if organized_file_system.len() == non_empty_blocks {
-                    break;
-                }
-                organized_file_system.push(*block);
-            } else {
-                organized_file_system.push(numbers_to_move[index].1);
-                index += 1;
-            }
-        }
-    }
-
-    // print_file_system(&organized_file_system[0..non_empty_blocks]);
+    timer.print_elapsed();
 
     organized_file_system
         .iter()
@@ -150,6 +146,7 @@ pub fn solve() -> Solution {
                 solution.increment(utils::Part::One, index * id)
             }
         });
+      
 
     solution
 }

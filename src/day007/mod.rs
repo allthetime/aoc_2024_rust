@@ -45,10 +45,10 @@ pub fn solve() -> Solution {
     // ...existing code to solve the problem...
     data.iter().for_each(|(total, test_numbers)| {
         if try_all_combinations(*total, test_numbers) {
-            println!("Possible to achieve total: {}", total);
+            // println!("Possible to achieve total: {}", total);
             solution.increment(utils::Part::One, *total);
         } else {
-            println!("Not possible to achieve total: {}", total);
+            // println!("Not possible to achieve total: {}", total);
         }
     });
 

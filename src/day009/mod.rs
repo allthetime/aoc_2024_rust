@@ -253,7 +253,7 @@ pub fn solve() -> Solution {
                 added_file_ids.push(file.0.id);
             }
         } else if (is_space_index) {
-            dbg!(space_index);
+            // dbg!(space_index);
             let (space, _) = &spaces[space_index];
             if !space.files.is_empty() {
                 space.files.clone().iter().for_each(|file| {
@@ -266,7 +266,7 @@ pub fn solve() -> Solution {
                 });
             }
             if space.space_left > 0 {
-                dbg!(space);
+                // dbg!(space);
                 // organized_file_system.push(File {
                 //     id: 9999999999999,
                 //     length: space.space_left,

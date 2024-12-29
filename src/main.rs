@@ -9,6 +9,8 @@ mod day007;
 mod day008;
 mod day009;
 mod utils;
+mod day010;
+mod day011;
 // {NEW_DAY_MOD}
 
 fn main() {
@@ -22,6 +24,8 @@ fn main() {
         day007::solve,
         day008::solve,
         day009::solve,
+        day010::solve,
+        day011::solve,
         // {NEW_DAY_RUN}
     ];
 

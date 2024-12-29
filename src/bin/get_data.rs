@@ -41,6 +41,8 @@ async fn main () -> Result<(), Box<dyn std::error::Error>> {
     
     dbg!(&d);
 
+    println!("https://adventofcode.com/2024/day/{}", dfs.parse::<usize>().unwrap());
+
     fs::write(d, data).expect("Unable to write file");
 
     Ok(())

@@ -18,7 +18,6 @@ fn main() {
         return;
     }
 
-    // Create new day folder
     if let Err(e) = fs::create_dir(&folder_name) {
         eprintln!("Failed to create directory {}: {}", folder_name, e);
         return;
@@ -52,7 +51,7 @@ fn main() {
     let main_rs_path = "src/main.rs";
     let mut main_rs_content = fs::read_to_string(main_rs_path).expect("Failed to read main.rs");
     let new_day_mod = format!("mod day{:0>3};", day_number);
-    let new_day_run = format!("day{:0>3}::solve", day_number);
+    let new_day_run = format!("day{:0>3}::solve,", day_number);
 
     if !main_rs_content.contains(&new_day_mod) {
         main_rs_content = main_rs_content.replace(
